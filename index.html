@@ -42,29 +42,33 @@
       async function sendMessage() {
         const input = document.getElementById("input");
         const chat = document.getElementById("chat");
-        const userMessage = input.value;
+        const userMessage = input.value.trim();
         if (!userMessage) return;
 
         chat.innerHTML += `<div class="msg"><span class="user">You:</span> ${userMessage}</div>`;
         input.value = "";
 
-        const response = await fetch("http://localhost:3000/chat", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: userMessage }),
-        });
+        try {
+          const response = await fetch("http://localhost:3000/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: userMessage }),
+          });
 
-        const data = await response.json();
-        const botMessage =
-          data.choices?.[0]?.message?.content || "Error getting response.";
+          const data = await response.json();
 
-        chat.innerHTML += `<div class="msg"><span class="bot">Bot:</span> ${botMessage}</div>`;
+          if (data.reply) {
+            chat.innerHTML += `<div class="msg"><span class="bot">Bot:</span> ${data.reply}</div>`;
+          } else {
+            chat.innerHTML += `<div class="msg"><span class="bot">Bot:</span> (no reply or error)</div>`;
+          }
+        } catch (err) {
+          console.error("Error:", err);
+          chat.innerHTML += `<div class="msg"><span class="bot">Bot:</span> Error connecting to server.</div>`;
+        }
+
         chat.scrollTop = chat.scrollHeight;
       }
-
-      document.getElementById("input").addEventListener("keypress", (e) => {
-        if (e.key === "Enter") sendMessage();
-      });
     </script>
   </body>
 </html>

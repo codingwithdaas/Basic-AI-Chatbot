@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>My AI Chatbot</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        max-width: 600px;
+        margin: auto;
+        padding: 2rem;
+      }
+      #chat {
+        border: 1px solid #ccc;
+        padding: 1rem;
+        height: 400px;
+        overflow-y: scroll;
+      }
+      .msg {
+        margin-bottom: 1em;
+      }
+      .user {
+        font-weight: bold;
+      }
+      .bot {
+        color: green;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>AI Chatbot</h2>
+    <div id="chat"></div>
+    <input
+      type="text"
+      id="input"
+      placeholder="Ask me anything..."
+      style="width: 80%"
+    />
+    <button onclick="sendMessage()">Send</button>
+
+    <script>
+      async function sendMessage() {
+        const input = document.getElementById("input");
+        const chat = document.getElementById("chat");
+        const userMessage = input.value;
+        if (!userMessage) return;
+
+        chat.innerHTML += `<div class="msg"><span class="user">You:</span> ${userMessage}</div>`;
+        input.value = "";
+
+        const response = await fetch("http://localhost:3000/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: userMessage }),
+        });
+
+        const data = await response.json();
+        const botMessage =
+          data.choices?.[0]?.message?.content || "Error getting response.";
+
+        chat.innerHTML += `<div class="msg"><span class="bot">Bot:</span> ${botMessage}</div>`;
+        chat.scrollTop = chat.scrollHeight;
+      }
+
+      document.getElementById("input").addEventListener("keypress", (e) => {
+        if (e.key === "Enter") sendMessage();
+      });
+    </script>
+  </body>
+</html>
